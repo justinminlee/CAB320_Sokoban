@@ -147,6 +147,7 @@ def check_elem_action_seq(warehouse, action_seq):
 
 class SokobanProblem(search.Problem):
     def actions(self, state):
+        print(state)
         legal_actions = []
         left_coord = (state.worker[0] - 1, state.worker[1])
         right_coord = (state.worker[0] + 1, state.worker[1])
@@ -197,7 +198,38 @@ class SokobanProblem(search.Problem):
         if node.action:
             print("Move " + node.action)
         print(node.state)
+
+class SokobanState:
+    def __init__(self, boxes, targets, walls, weights, worker):
+        self.boxes = boxes
+        self.targets = targets
+        self.walls = walls
+        self.weights = weights
+        self.worker = worker
+    
+    def __str__(self):
+        X,Y = zip(*self.walls)
+        x_size, y_size = 1+max(X), 1+max(Y)
         
+        vis = [[" "] * x_size for y in range(y_size)]
+        for (x,y) in self.walls:
+            vis[y][x] = "#"
+        for (x,y) in self.targets:
+            vis[y][x] = "."
+        if vis[self.worker[1]][self.worker[0]] == ".":
+            vis[self.worker[1]][self.worker[0]] = "!"
+        else:
+            vis[self.worker[1]][self.worker[0]] = "@"
+        for (x,y) in self.boxes:
+            if vis[y][x] == ".":
+                vis[y][x] = "*"
+            else:
+                vis[y][x] = "$"
+        return "\n".join(["".join(line) for line in vis])
+
+    def copy(self):
+        clone = SokobanState(self.boxes, self.targets, self.walls, self.weights, self.worker)
+        return clone
 
 def solve_weighted_sokoban(warehouse):
     '''
@@ -225,15 +257,20 @@ def solve_weighted_sokoban(warehouse):
     S = []
     C = -1
     #taboo = taboo_cells(str(warehouse))
+    # Get Initial State:
+    initial_state = SokobanState(warehouse.boxes, warehouse.targets, warehouse.walls, warehouse.weights, warehouse.worker)
     # Get goal state:
     goal_str = str(warehouse)
-    goal_str.replace('$', ' ')
-    goal_str.replace('.', '*')
+    goal_str = goal_str.replace('$', ' ')
+    goal_str = goal_str.replace('.', '*')
     goal_warehouse = sokoban.Warehouse()
     goal_warehouse.from_string(goal_str)
-    problem = SokobanProblem(warehouse, goal=goal_warehouse)
-    test = search.breadth_first_graph_search(problem)
-    problem.print_solution(test)
+    goal_state = SokobanState(goal_warehouse.boxes, goal_warehouse.targets, goal_warehouse.walls, goal_warehouse.walls, goal_warehouse.worker)
+    # Create problem
+    problem = SokobanProblem(initial_state, goal=goal_state)
+    # Find solution node via A* graph search
+    solution_node = search.astar_graph_search(problem)
+    problem.print_solution(solution_node)
     return (S, C)
 
 
