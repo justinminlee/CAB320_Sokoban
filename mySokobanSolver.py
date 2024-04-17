@@ -145,6 +145,60 @@ def check_elem_action_seq(warehouse, action_seq):
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+class SokobanProblem(search.Problem):
+    def actions(self, state):
+        legal_actions = []
+        left_coord = (state.worker[0] - 1, state.worker[1])
+        right_coord = (state.worker[0] + 1, state.worker[1])
+        up_coord = (state.worker[0], state.worker[1] - 1)
+        down_coord = (state.worker[0], state.worker[1] + 1)
+        lines = str(state).split('\n')
+
+        # Check there is no wall blocking left movement
+        if lines[left_coord[1]][left_coord[0]] != '#':
+            legal_actions.append('left')
+        # Check there is no wall blocking right movement
+        if lines[right_coord[1]][right_coord[0]] != '#':
+            legal_actions.append('right')
+        # Check there is no wall blocking up movement
+        if lines[up_coord[1]][up_coord[0]] != '#':
+            legal_actions.append('up')
+        # Check there is no wall blocking down movement
+        if lines[down_coord[1]][down_coord[0]] != '#':
+            legal_actions.append('down')
+        return legal_actions
+    
+    def result(self, state, action):
+        assert action in self.actions(state)
+        next_state = state.copy()
+        if action == 'left':
+            next_state.worker = (next_state.worker[0] - 1, next_state.worker[1])
+        if action == 'right':
+            next_state.worker = (next_state.worker[0] + 1, next_state.worker[1])
+        if action == 'up':
+            next_state.worker = (next_state.worker[0], next_state.worker[1] - 1)
+        if action == 'down':
+            next_state.worker = (next_state.worker[0], next_state.worker[1] + 1)
+    
+    def h(self, node):
+        return 0
+    
+    def print_solution(self, goal_node):
+        path = goal_node.path()
+        print("Solution takes {0} steps from the initial state\n".format(len(path) - 1))
+        print(path[0].state)
+        print("to the goal state\n")
+        print(path[-1].state)
+        print("Below is the sequence of moves\n")
+        for node in path:
+            self.print_node(node)
+
+    def print_node(self, node):
+        if node.action:
+            print("Move " + node.action)
+        print(node.state)
+        
+
 def solve_weighted_sokoban(warehouse):
     '''
     This function analyses the given warehouse.
@@ -168,8 +222,19 @@ def solve_weighted_sokoban(warehouse):
             C is the total cost of the action sequence C
 
     '''
-    
-    raise NotImplementedError()
+    S = []
+    C = -1
+    #taboo = taboo_cells(str(warehouse))
+    # Get goal state:
+    goal_str = str(warehouse)
+    goal_str.replace('$', ' ')
+    goal_str.replace('.', '*')
+    goal_warehouse = sokoban.Warehouse()
+    goal_warehouse.from_string(goal_str)
+    problem = SokobanProblem(warehouse, goal=goal_warehouse)
+    test = search.breadth_first_graph_search(problem)
+    problem.print_solution(test)
+    return (S, C)
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
