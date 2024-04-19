@@ -73,21 +73,7 @@ def taboo_cells(warehouse):
        The returned string should NOT have marks for the worker, the targets,
        and the boxes.  
     '''
-    
-    calculate_taboo_cells = set()
-    
-    #Test witha predefined simple warehouse layout to check the sanity
-    test_warehouse = warehouse()
-    test_warehouse.from_string(["####", "# .#", "#  ###", "#*  #", "#  $@#", "#  ###", "####"])
-    expected_taboo_cells = {'(1, 1)', '(1, 2)', '(1, 3)'}
-    
-    #Run the function on the test warehose
-    test_result = taboo_cells(test_warehouse)
-    assert test_result == expected_taboo_cells
-    
-    return calculate_taboo_cells
-    
-       
+    ##         "INSERT YOUR CODE HERE"    
     raise NotImplementedError()
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -153,6 +139,75 @@ def check_elem_action_seq(warehouse, action_seq):
     '''
     
     ##         "INSERT YOUR CODE HERE"
+    
+    # Define possible movements in terms of x, y coordinates
+    directions = {
+    'Left': (-1, 0),
+    'Right': (1, 0),
+    'Up': (0, -1),
+    'Down': (0, 1),
+    }
+    
+    # Initialize worker's starting position
+    worker_x, worker_y = warehouse.worker
+    
+     # Convert box positions to a set for efficient manipulation and checks
+    box_locations = set(warehouse.boxes) 
+
+    # Ensure walls and targets are also treated as sets
+    walls = set(warehouse.walls)
+    targets = set(warehouse.targets)
+
+    # Process each action in the sequence
+    for action in action_seq:
+        
+        # Determine the change in coordinates after the action
+        dx, dy = directions[action]
+        
+        # Calculate new worker position after movement
+        new_worker_x, new_worker_y = worker_x + dx, worker_y + dy
+        
+        # Check if the new worker position hits a wall
+        if (new_worker_x, new_worker_y) in walls:
+            return "Impossible"
+        
+        # Check if the new worker position pushes a box
+        if (new_worker_x, new_worker_y) in box_locations:
+            new_box_x, new_box_y = new_worker_x + dx, new_worker_y + dy
+            if (new_box_x, new_box_y) in walls or (new_box_x, new_box_y) in box_locations:
+                return "Impossible"
+            box_locations.remove((new_worker_x, new_worker_y))
+            box_locations.add((new_box_x, new_box_y))
+        
+        worker_x, worker_y = new_worker_x, new_worker_y
+
+    # Generate the final state of the warehouse after applying all actions
+    return create_warehouse_representation(worker_x, worker_y, box_locations, walls, targets)
+
+def create_warehouse_representation(worker_x, worker_y, boxes, walls, targets):
+    
+    # Calculate the maximum dimensions of the warehouse to size the grid
+    max_x = max(x for x, _ in walls.union(boxes, targets, {(worker_x, worker_y)}))
+    max_y = max(y for _, y in walls.union(boxes, targets, {(worker_x, worker_y)}))
+    
+    # Initialize the grid to represent the warehouse state
+    grid = [[' ' for _ in range(max_x + 1)] for _ in range(max_y + 1)]
+    
+    # Mark walls on the grid
+    for x, y in walls:
+        grid[y][x] = '#'
+    for x, y in targets:
+        grid[y][x] = '.' if (x, y) not in boxes else '*'
+    for x, y in boxes:
+        if (x, y) not in targets:
+            grid[y][x] = '$'
+            
+    # Place the worker, mark as '!' if on target, otherwise '@'
+    grid[worker_y][worker_x] = '!' if (worker_x, worker_y) in targets else '@'
+    
+    # Join the grid lines into a single string to represent the warehouse visually
+    return "\n".join("".join(row) for row in grid)
+
     
     raise NotImplementedError()
 
