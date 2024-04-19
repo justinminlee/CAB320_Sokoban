@@ -42,7 +42,7 @@ def my_team():
     of triplet of the form (student_number, first_name, last_name)
     
     '''
-#    return [ (1234567, 'Ada', 'Lovelace'), (1234568, 'Grace', 'Hopper'), (1234569, 'Eva', 'Tardos') ]
+#    return [ (11198885, 'Minjae', 'Lee'), (10804072, 'Zaichic', 'Turner'), (11225271, 'Chanyoung', 'Kim') ]
     raise NotImplementedError()
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -73,7 +73,21 @@ def taboo_cells(warehouse):
        The returned string should NOT have marks for the worker, the targets,
        and the boxes.  
     '''
-    ##         "INSERT YOUR CODE HERE"    
+    
+    calculate_taboo_cells = set()
+    
+    #Test witha predefined simple warehouse layout to check the sanity
+    test_warehouse = warehouse()
+    test_warehouse.from_string(["####", "# .#", "#  ###", "#*  #", "#  $@#", "#  ###", "####"])
+    expected_taboo_cells = {'(1, 1)', '(1, 2)', '(1, 3)'}
+    
+    #Run the function on the test warehose
+    test_result = taboo_cells(test_warehouse)
+    assert test_result == expected_taboo_cells
+    
+    return calculate_taboo_cells
+    
+       
     raise NotImplementedError()
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
