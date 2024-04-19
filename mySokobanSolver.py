@@ -73,21 +73,7 @@ def taboo_cells(warehouse):
        The returned string should NOT have marks for the worker, the targets,
        and the boxes.  
     '''
-    
-    calculate_taboo_cells = set()
-    
-    #Test witha predefined simple warehouse layout to check the sanity
-    test_warehouse = warehouse()
-    test_warehouse.from_string(["####", "# .#", "#  ###", "#*  #", "#  $@#", "#  ###", "####"])
-    expected_taboo_cells = {'(1, 1)', '(1, 2)', '(1, 3)'}
-    
-    #Run the function on the test warehose
-    test_result = taboo_cells(test_warehouse)
-    assert test_result == expected_taboo_cells
-    
-    return calculate_taboo_cells
-    
-       
+    #         "INSERT YOUR CODE HERE"
     raise NotImplementedError()
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
