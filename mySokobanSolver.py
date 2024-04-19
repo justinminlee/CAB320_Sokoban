@@ -147,7 +147,6 @@ def check_elem_action_seq(warehouse, action_seq):
 
 class SokobanProblem(search.Problem):
     def actions(self, state):
-        print(state)
         legal_actions = []
         left_coord = (state.worker[0] - 1, state.worker[1])
         right_coord = (state.worker[0] + 1, state.worker[1])
@@ -172,17 +171,43 @@ class SokobanProblem(search.Problem):
     def result(self, state, action):
         assert action in self.actions(state)
         next_state = state.copy()
+        left_coord = (state.worker[0] - 1, state.worker[1])
+        right_coord = (state.worker[0] + 1, state.worker[1])
+        up_coord = (state.worker[0], state.worker[1] - 1)
+        down_coord = (state.worker[0], state.worker[1] + 1)
+        lines = str(state).split('\n')
+        # Moving left
         if action == 'left':
+            if lines[left_coord[1]][left_coord[0]] == '$':
+                next_state.boxes.remove(left_coord)
+                next_state.boxes.append((left_coord[0] + 1, left_coord[1]))
             next_state.worker = (next_state.worker[0] - 1, next_state.worker[1])
+        # Moving right
         if action == 'right':
+            if lines[right_coord[1]][right_coord[0]] == '$':
+                next_state.boxes.remove(right_coord)
+                next_state.boxes.append((right_coord[0] + 1, right_coord[1]))
             next_state.worker = (next_state.worker[0] + 1, next_state.worker[1])
+        # Moving up
         if action == 'up':
+            if lines[up_coord[1]][up_coord[0]] == '$':
+                next_state.boxes.remove(up_coord)
+                next_state.boxes.append((up_coord[0] + 1, up_coord[1]))
             next_state.worker = (next_state.worker[0], next_state.worker[1] - 1)
+        # Moving down
         if action == 'down':
+            if lines[down_coord[1]][down_coord[0]] == '$':
+                next_state.boxes.remove(down_coord)
+                next_state.boxes.append((down_coord[0] + 1, down_coord[1]))
             next_state.worker = (next_state.worker[0], next_state.worker[1] + 1)
+        return next_state
     
     def h(self, node):
-        return 0
+        '''
+        Heuristic for goal state of the form range(k,-1,1) where k is a positive integer. 
+        h(n) = 1 + the sum of the weights of the boxes not at a target
+        '''
+        return 1 + sum(node.state.weights)
     
     def print_solution(self, goal_node):
         path = goal_node.path()
@@ -254,10 +279,9 @@ def solve_weighted_sokoban(warehouse):
             C is the total cost of the action sequence C
 
     '''
-    S = []
-    C = -1
     #taboo = taboo_cells(str(warehouse))
     # Get Initial State:
+    print(warehouse.weights)
     initial_state = SokobanState(warehouse.boxes, warehouse.targets, warehouse.walls, warehouse.weights, warehouse.worker)
     # Get goal state:
     goal_str = str(warehouse)
@@ -271,7 +295,7 @@ def solve_weighted_sokoban(warehouse):
     # Find solution node via A* graph search
     solution_node = search.astar_graph_search(problem)
     problem.print_solution(solution_node)
-    return (S, C)
+    return ([], -1)
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
