@@ -171,7 +171,7 @@ def check_elem_action_seq(warehouse, action_seq):
         if (new_worker_x, new_worker_y) in walls:
             return "Impossible"
         
-        # Check if the new worker position pushes a box
+        # Check if the new worker position pushes a box 
         if (new_worker_x, new_worker_y) in box_locations:
             new_box_x, new_box_y = new_worker_x + dx, new_worker_y + dy
             if (new_box_x, new_box_y) in walls or (new_box_x, new_box_y) in box_locations:
