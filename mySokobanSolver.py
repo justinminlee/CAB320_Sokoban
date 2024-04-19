@@ -152,19 +152,18 @@ class SokobanProblem(search.Problem):
         right_coord = (state.worker[0] + 1, state.worker[1])
         up_coord = (state.worker[0], state.worker[1] - 1)
         down_coord = (state.worker[0], state.worker[1] + 1)
-        lines = str(state).split('\n')
 
         # Check there is no wall blocking left movement
-        if lines[left_coord[1]][left_coord[0]] != '#':
+        if left_coord in state.walls:
             legal_actions.append('left')
         # Check there is no wall blocking right movement
-        if lines[right_coord[1]][right_coord[0]] != '#':
+        if right_coord in state.walls:
             legal_actions.append('right')
         # Check there is no wall blocking up movement
-        if lines[up_coord[1]][up_coord[0]] != '#':
+        if up_coord in state.walls:
             legal_actions.append('up')
         # Check there is no wall blocking down movement
-        if lines[down_coord[1]][down_coord[0]] != '#':
+        if down_coord in state.walls:
             legal_actions.append('down')
         return legal_actions
     
@@ -175,28 +174,27 @@ class SokobanProblem(search.Problem):
         right_coord = (state.worker[0] + 1, state.worker[1])
         up_coord = (state.worker[0], state.worker[1] - 1)
         down_coord = (state.worker[0], state.worker[1] + 1)
-        lines = str(state).split('\n')
         # Moving left
         if action == 'left':
-            if lines[left_coord[1]][left_coord[0]] == '$':
+            if left_coord in state.boxes:
                 next_state.boxes.remove(left_coord)
                 next_state.boxes.append((left_coord[0] + 1, left_coord[1]))
             next_state.worker = (next_state.worker[0] - 1, next_state.worker[1])
         # Moving right
         if action == 'right':
-            if lines[right_coord[1]][right_coord[0]] == '$':
+            if right_coord in state.boxes:
                 next_state.boxes.remove(right_coord)
                 next_state.boxes.append((right_coord[0] + 1, right_coord[1]))
             next_state.worker = (next_state.worker[0] + 1, next_state.worker[1])
         # Moving up
         if action == 'up':
-            if lines[up_coord[1]][up_coord[0]] == '$':
+            if up_coord in state.boxes:
                 next_state.boxes.remove(up_coord)
                 next_state.boxes.append((up_coord[0] + 1, up_coord[1]))
             next_state.worker = (next_state.worker[0], next_state.worker[1] - 1)
         # Moving down
         if action == 'down':
-            if lines[down_coord[1]][down_coord[0]] == '$':
+            if down_coord in state.boxes:
                 next_state.boxes.remove(down_coord)
                 next_state.boxes.append((down_coord[0] + 1, down_coord[1]))
             next_state.worker = (next_state.worker[0], next_state.worker[1] + 1)
@@ -251,6 +249,9 @@ class SokobanState:
             else:
                 vis[y][x] = "$"
         return "\n".join(["".join(line) for line in vis])
+    
+    def __lt__(self, state):
+        return str(self) < str(state)
 
     def copy(self):
         clone = SokobanState(self.boxes, self.targets, self.walls, self.weights, self.worker)
@@ -281,7 +282,7 @@ def solve_weighted_sokoban(warehouse):
     '''
     #taboo = taboo_cells(str(warehouse))
     # Get Initial State:
-    print(warehouse.weights)
+    print(warehouse.walls)
     initial_state = SokobanState(warehouse.boxes, warehouse.targets, warehouse.walls, warehouse.weights, warehouse.worker)
     # Get goal state:
     goal_str = str(warehouse)
