@@ -31,7 +31,7 @@ Last modified by 2022-03-27  by f.maire@qut.edu.au
 # with these files
 import search 
 import sokoban
-
+import math
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -145,6 +145,10 @@ def check_elem_action_seq(warehouse, action_seq):
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+# Helper function for calculating distance:
+def distance(point1, point2):
+    return round(math.sqrt(pow(point2[0] - point1[0], 2) + pow(point2[1] - point1[1], 2)))
+
 class SokobanProblem(search.Problem):
     def actions(self, state):
         legal_actions = []
@@ -177,26 +181,26 @@ class SokobanProblem(search.Problem):
         # Moving left
         if action == 'left':
             if left_coord in state.boxes:
-                next_state.boxes.remove(left_coord)
-                next_state.boxes.append((left_coord[0] + 1, left_coord[1]))
+                index = state.boxes.index(left_coord)
+                next_state.boxes[index] = (left_coord[0] + 1, left_coord[1])
             next_state.worker = (next_state.worker[0] - 1, next_state.worker[1])
         # Moving right
         if action == 'right':
             if right_coord in state.boxes:
-                next_state.boxes.remove(right_coord)
-                next_state.boxes.append((right_coord[0] + 1, right_coord[1]))
+                index = state.boxes.index(right_coord)
+                next_state.boxes[index] = (right_coord[0] + 1, right_coord[1])
             next_state.worker = (next_state.worker[0] + 1, next_state.worker[1])
         # Moving up
         if action == 'up':
             if up_coord in state.boxes:
-                next_state.boxes.remove(up_coord)
-                next_state.boxes.append((up_coord[0] + 1, up_coord[1]))
+                index = state.boxes.index(up_coord)
+                next_state.boxes[index] = (up_coord[0] + 1, up_coord[1])
             next_state.worker = (next_state.worker[0], next_state.worker[1] - 1)
         # Moving down
         if action == 'down':
             if down_coord in state.boxes:
-                next_state.boxes.remove(down_coord)
-                next_state.boxes.append((down_coord[0] + 1, down_coord[1]))
+                index = state.boxes.index(down_coord)
+                next_state.boxes[index] = (down_coord[0] + 1, down_coord[1])
             next_state.worker = (next_state.worker[0], next_state.worker[1] + 1)
         return next_state
     
@@ -205,7 +209,7 @@ class SokobanProblem(search.Problem):
         Heuristic for goal state of the form range(k,-1,1) where k is a positive integer. 
         h(n) = 1 + the sum of the weights of the boxes not at a target
         '''
-        return 1 + sum(node.state.weights)
+        return 1 + sum([distance(target, box) * weight for target, box, weight in zip(node.state.targets, node.state.boxes, node.state.weights)])
     
     def print_solution(self, goal_node):
         path = goal_node.path()
