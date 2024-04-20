@@ -48,6 +48,52 @@ def my_team():
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
+# If there is at least 1 wall above or below and left or right, cell is in a corner
+def is_corner(warehouse, x, y):
+    """
+    Check if a cell is a corner cell in the warehouse grid.
+    
+    A cell is considered a corner cell if it satisfies the following conditions:
+    - It is not a wall ('#').
+    - It has at least one wall adjacent to it in both horizontal and vertical directions.
+    
+    @param warehouse: a Warehouse object
+    @param x: x-coordinate (column index) of the cell
+    @param y: y-coordinate (row index) of the cell
+    
+    @return: True if the cell is a corner cell, False otherwise
+    """
+
+    # Check if the cell is not a wall
+    if warehouse[y][x] != '#':
+
+        # Check for walls above, below, left, and right of the cell
+        up_down_walls = sum(1 for (dx, dy) in [(0, 1), (0, -1)] if warehouse[y + dy][x + dx] == '#')
+        left_right_walls = sum(1 for (dx, dy) in [(1, 0), (-1, 0)] if warehouse[y + dy][x + dx] == '#')
+
+        # Check if there is at least one wall adjacent in both horizontal and vertical directions
+        return up_down_walls >= 1 and left_right_walls >= 1
+    
+    else:
+
+        # Cell is a wall, not a corner
+        return False
+    
+# Check if the cell at coordinates (x, y) is a target cell.
+def is_target(self, x, y):
+    """
+    A target cell is a cell where a box should be pushed to.
+    It is represented by characters '.', '!', or '*'.
+    
+    @param x: x-coordinate (column index) of the cell
+    @param y: y-coordinate (row index) of the cell
+    
+    @return: True if the cell is a target cell, False otherwise
+    """
+    
+    cell_value = self[y][x]
+    return cell_value in ('.', '!', '*')
+
 def taboo_cells(warehouse):
     '''  
     Identify the taboo cells of a warehouse. A "taboo cell" is by definition
@@ -73,8 +119,37 @@ def taboo_cells(warehouse):
        The returned string should NOT have marks for the worker, the targets,
        and the boxes.  
     '''
-    #         "INSERT YOUR CODE HERE"
-    raise NotImplementedError()
+    ##         "INSERT YOUR CODE HERE"   
+
+    # Symbol
+    wall_square = '#'
+    taboo_square = 'X'
+
+    # Copy the warehouse to avoid modifying the original
+    warehouse_copy = warehouse.copy()
+
+    # Iterate over each cell in the warehouse grid
+    for y in range(1, warehouse_copy.nrows - 1):
+        for x in range(1, warehouse_copy.ncols - 1):
+            # Check if the cell is a corner and not a target
+            if warehouse_copy[y][x] != wall_square and not warehouse_copy.is_target(x, y):
+                if is_corner(warehouse_copy, x, y):
+                    warehouse_copy[y][x] = taboo_square  # Mark as taboo
+
+            # Check if the cell is between two corners along a wall
+            elif warehouse_copy[y][x] == ' ':
+                # Check if all cells between two corners along the same row are empty
+                if all(warehouse_copy[y][x2] == ' ' for x2 in range(x + 1, warehouse_copy.ncols - 1)) \
+                        and all(warehouse_copy[y][x3] == ' ' for x3 in range(x - 1, 0, -1)):
+                    warehouse_copy[y][x] = taboo_square  # Mark as taboo
+
+                # Check if all cells between two corners along the same column are empty
+                elif all(warehouse_copy[y2][x] == ' ' for y2 in range(y + 1, warehouse_copy.nrows - 1)) \
+                        and all(warehouse_copy[y3][x] == ' ' for y3 in range(y - 1, 0, -1)):
+                    warehouse_copy[y][x] = taboo_square  # Mark as taboo
+
+    # Convert the warehouse to a string representation
+    return str(warehouse_copy)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
