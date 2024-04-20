@@ -110,34 +110,56 @@ def taboo_cells(warehouse):
     wall_square = '#'
     taboo_square = 'X'
     target_squares = {'.', '!', '*'}
-    empty_square = ' '
+
+    # Copy the warehouse to avoid modifying the original
+    warehouse_copy = str(warehouse.copy())
+
+    remove_list = ['$', '@']
+    # remove the things that aren't walls or targets
+    for remove in remove_list:
+        warehouse_copy = warehouse_copy.replace(remove, ' ')
+
 
     # Convert warehouse to a grid (2D list)
-    grid = [[char for char in line] for line in str(warehouse).split('\n')]
+    grid = [[char for char in line] for line in warehouse_copy.split('\n')]
 
     # Apply Rule 1: Mark corner cells as taboo
     for y in range(1, len(grid) - 1):
+        in_wall = False
         for x in range(1, len(grid[0]) - 1):
-            if grid[y][x] == empty_square and is_corner(grid, x, y):
-                grid[y][x] = taboo_square
+            if not in_wall:
+                if grid[y][x] == wall_square:
+                    in_wall = True
+                elif grid[y][x] == ' ' and is_corner(grid, x, y) and grid[y][x] not in target_squares:
+                    grid[y][x] = taboo_square
 
     # Apply Rule 2: Mark cells between corners along a wall as taboo
     for y in range(1, len(grid) - 1):
         for x in range(1, len(grid[0]) - 1):
             if grid[y][x] == taboo_square and is_corner(grid, x, y):
-                # Fill taboo cells in the row to the right of the corner
+                # Fill taboo cells to the right of the corner
                 for x2 in range(x + 1, len(grid[0]) - 1):
                     if grid[y][x2] in target_squares or grid[y][x2] == wall_square:
                         break
-                    grid[y][x2] = taboo_square
-                # Fill taboo cells in the column below the corner
+                    if grid[y][x2] == taboo_square and is_corner(grid, x2, y):
+                        for x3 in range(x + 1, x2):
+                            grid[y][x3] = taboo_square
+                        break
+                # Fill taboo cells below the corner
                 for y2 in range(y + 1, len(grid) - 1):
                     if grid[y2][x] in target_squares or grid[y2][x] == wall_square:
                         break
-                    grid[y2][x] = taboo_square
+                    if grid[y2][x] == taboo_square and is_corner(grid, x, y2):
+                        for y3 in range(y + 1, y2):
+                            grid[y3][x] = taboo_square
+                        break
 
     # Convert grid back to a string
     taboo_str = '\n'.join([''.join(row) for row in grid])
+
+    # Remove the target_squares
+    for target in target_squares:
+        taboo_str = taboo_str.replace(target, ' ')
 
     return taboo_str
 
