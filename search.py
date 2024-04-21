@@ -124,7 +124,6 @@ class PriorityQueue:
 
     def append(self, item):
         """Insert item at its correct position."""
-        print(self.f(item))
         heapq.heappush(self.heap, (self.f(item), item))
 
     def extend(self, items):
