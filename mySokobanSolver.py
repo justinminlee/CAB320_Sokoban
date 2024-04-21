@@ -112,16 +112,15 @@ def taboo_cells(warehouse):
     target_squares = {'.', '!', '*'}
 
     # Copy the warehouse to avoid modifying the original
-    warehouse_copy = str(warehouse.copy())
+    warehouse_str = str(warehouse)
 
     remove_list = ['$', '@']
     # remove the things that aren't walls or targets
     for remove in remove_list:
-        warehouse_copy = warehouse_copy.replace(remove, ' ')
-
+        warehouse_str = warehouse_str.replace(remove, ' ')
 
     # Convert warehouse to a grid (2D list)
-    grid = [[char for char in line] for line in warehouse_copy.split('\n')]
+    grid = [[char for char in line] for line in warehouse_str.split('\n')]
 
     # Apply Rule 1: Mark corner cells as taboo
     for y in range(1, len(grid) - 1):
